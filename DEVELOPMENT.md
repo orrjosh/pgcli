@@ -63,3 +63,26 @@ python custom_pgcli.py --help
 The hook function receives the query text as a string and should return:
 - `True` to allow the query to execute
 - `False` to prevent the query from executing
+
+## AI Query Analysis with Ollama
+
+The custom pgcli version includes AI-powered query analysis using Ollama with the Gemma model. To use this feature:
+
+1. Install Ollama following instructions at https://ollama.ai
+
+2. Pull and run the Gemma model:
+```bash
+# Pull the model
+ollama pull gemma3:4b
+
+# Verify it's working
+ollama run gemma3:4b "test"
+```
+
+3. Make sure Ollama is running in the background:
+```bash
+# Start Ollama server (if not already running)
+ollama serve
+```
+
+The AI analysis will be offered whenever pgcli detects potential performance issues in your queries. The first analysis will take a few seconds as it loads your database structure, but subsequent analyses will be faster due to context reuse.
