@@ -914,7 +914,7 @@ class PGCli:
 
         if not self.less_chatty:
             print("Server: PostgreSQL", self.pgexecute.server_version)
-            print("Version:", __version__)
+            print(f"Version: {__version__} DEVELOPMENT")
             print("Home: http://pgcli.com")
 
         try:
@@ -1078,6 +1078,12 @@ class PGCli:
         """
         logger = self.logger
         logger.debug("sql: %r", text)
+
+        # Hook for checking query before execution
+        if hasattr(self, 'pre_execute_hook') and callable(self.pre_execute_hook):
+            should_execute = self.pre_execute_hook(text)
+            if not should_execute:
+                return [], MetaQuery(text, False, 0, 0, False, False, False, False, False)
 
         # set query to formatter in order to parse table name
         self.formatter.query = text
@@ -1257,6 +1263,15 @@ class PGCli:
     def get_last_query(self):
         """Get the last query executed or None."""
         return self.query_history[-1][0] if self.query_history else None
+
+    def set_pre_execute_hook(self, hook):
+        """Set a hook that will be called before executing any query.
+        
+        Args:
+            hook (callable): A function that takes a query string and returns
+                a boolean indicating whether the query should be executed.
+        """    
+        self.pre_execute_hook = hook
 
     def is_too_wide(self, line):
         """Will this line be too wide to fit into terminal?"""
@@ -1449,7 +1464,7 @@ def cli(
     log_file: str,
 ):
     if version:
-        print("Version:", __version__)
+        print(f"Version: {__version__} DEVELOPMENT")
         sys.exit(0)
 
     config_dir = os.path.dirname(config_location())
